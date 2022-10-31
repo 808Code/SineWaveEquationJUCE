@@ -30,13 +30,9 @@ MainComponent::~MainComponent()
 //==============================================================================
 void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
 {
-    // This function will be called when the audio device is started, or when
-    // its settings (i.e. sample rate, block size, etc) are changed.
-
-    // You can use this function to initialise any resources you might need,
-    // but be careful - it will be called on the audio thread, not the GUI thread.
-
-    // For more details, see the help for AudioProcessor::prepareToPlay()
+    for (int i = 0; i <= outputs;i++) {
+        sineWave[i].prepareToPlay(sampleRate);
+    }
 }
 
 void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
@@ -48,6 +44,12 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
     // Right now we are not producing any data, in which case we need to clear the buffer
     // (to prevent the output of random noise)
     bufferToFill.clearActiveBufferRegion();
+    for (int ch = 0; ch < outputs;ch++) {
+        auto* outBuffer = bufferToFill.buffer->getWritePointer(ch);
+        for (int s = 0; s < bufferToFill.buffer->getNumSamples();s++) {
+            outBuffer[s] = sineWave[ch].getNextSample(200.00f)*0.03f;
+        }
+    }
 }
 
 void MainComponent::releaseResources()
