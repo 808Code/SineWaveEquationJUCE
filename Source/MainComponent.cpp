@@ -3,75 +3,75 @@
 //==============================================================================
 MainComponent::MainComponent()
 {
-    // Make sure you set the size of the component after
-    // you add any child components.
-    setSize (800, 600);
+    addAndMakeVisible(frequencySlider);
+    frequencySlider.setRange(0, 5000.0);
+    frequencySlider.setTextValueSuffix(" Hz");
+    frequencySlider.onValueChange = [this] { 
+       frequency = frequencySlider .getValue();
+    };
 
-    // Some platforms require permissions to open input channels so request that here
-    if (juce::RuntimePermissions::isRequired (juce::RuntimePermissions::recordAudio)
-        && ! juce::RuntimePermissions::isGranted (juce::RuntimePermissions::recordAudio))
-    {
-        juce::RuntimePermissions::request (juce::RuntimePermissions::recordAudio,
-                                           [&] (bool granted) { setAudioChannels (granted ? 2 : 0, 2); });
-    }
-    else
-    {
-        // Specify the number of input and output channels that we want to open
-        setAudioChannels (2, 2);
-    }
+    addAndMakeVisible(frequencyLabel);
+    frequencyLabel.setText("Frequency", juce::dontSendNotification);
+    frequencyLabel.attachToComponent(&frequencySlider, true);
+
+
+    addAndMakeVisible(levelSlider);
+    levelSlider.setRange(0, 10.0);
+
+    addAndMakeVisible(levelLabel);
+    levelLabel.setText("Noise Level", juce::dontSendNotification);
+    levelLabel.attachToComponent(&levelSlider, true);
+
+    setAudioChannels(2, 2);
+    setSize (600, 400);
+    
+    
 }
 
 MainComponent::~MainComponent()
 {
-    // This shuts down the audio device and clears the audio source.
+ 
     shutdownAudio();
 }
 
 //==============================================================================
 void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
 {
-    for (int i = 0; i <= outputs;i++) {
+    for (int i = 0; i <outputs;i++) {
         sineWave[i].prepareToPlay(sampleRate);
     }
 }
 
 void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
 {
-    // Your audio-processing code goes here!
+    auto level = (float)levelSlider.getValue();
+    auto levelScale = level * 2.0f;
 
-    // For more details, see the help for AudioProcessor::getNextAudioBlock()
-
-    // Right now we are not producing any data, in which case we need to clear the buffer
-    // (to prevent the output of random noise)
     bufferToFill.clearActiveBufferRegion();
     for (int ch = 0; ch < outputs;ch++) {
         auto* outBuffer = bufferToFill.buffer->getWritePointer(ch);
         for (int s = 0; s < bufferToFill.buffer->getNumSamples();s++) {
-            outBuffer[s] = sineWave[ch].getNextSample(200.00f)*0.03f;
+            outBuffer[s] = sineWave[ch].getNextSample(frequency) * levelScale - level;
         }
     }
 }
 
 void MainComponent::releaseResources()
 {
-    // This will be called when the audio device stops, or when it is being
-    // restarted due to a setting change.
-
-    // For more details, see the help for AudioProcessor::releaseResources()
+   
 }
 
 //==============================================================================
 void MainComponent::paint (juce::Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
+
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 
-    // You can add your drawing code here!
 }
 
 void MainComponent::resized()
 {
-    // This is called when the MainContentComponent is resized.
-    // If you add any child components, this is where you should
-    // update their positions.
+    auto sliderLeft = 120;
+    frequencySlider.setBounds(sliderLeft, 20, getWidth() - sliderLeft - 10, 20);
+    levelSlider.setBounds(sliderLeft, 50, getWidth() - sliderLeft - 10, 20);
 }

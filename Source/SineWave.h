@@ -15,9 +15,11 @@ class SineWave {
 private:
     float period{ 0.0f };
     float currentTime{ 0.0f };
+    
 public:
     void prepareToPlay(double sampleRate);
     float getNextSample(float frequency);
+   
 
 
 };
