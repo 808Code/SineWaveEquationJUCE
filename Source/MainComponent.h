@@ -23,11 +23,18 @@ public:
     //==============================================================================
     void paint (juce::Graphics& g) override;
     void resized() override;
+    void setFrequency(float frequency);
+    float getFrequency();
 
 private:
     static constexpr int outputs{ 2 };
     SineWave sineWave[outputs];
-
+    juce::Slider frequencySlider;
+    juce::Slider levelSlider;
+    juce::Label  frequencyLabel;
+    juce::Label  levelLabel;
+    float frequency{ 0.0f };
+   
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
