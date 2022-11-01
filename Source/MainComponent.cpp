@@ -22,6 +22,8 @@ MainComponent::MainComponent()
     levelLabel.setText("Noise Level", juce::dontSendNotification);
     levelLabel.attachToComponent(&levelSlider, true);
 
+   
+
     setAudioChannels(2, 2);
     setSize (600, 400);
     
@@ -45,13 +47,12 @@ void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRat
 void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
 {
     auto level = (float)levelSlider.getValue();
-    auto levelScale = level * 2.0f;
-
+    
     bufferToFill.clearActiveBufferRegion();
     for (int ch = 0; ch < outputs;ch++) {
         auto* outBuffer = bufferToFill.buffer->getWritePointer(ch);
         for (int s = 0; s < bufferToFill.buffer->getNumSamples();s++) {
-            outBuffer[s] = sineWave[ch].getNextSample(frequency) * levelScale - level;
+            outBuffer[s] = sineWave[ch].getNextSample(frequency) * level/10.0;
         }
     }
 }
